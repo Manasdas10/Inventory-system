@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 
 import toast from "react-hot-toast";
 
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
+import Sidebar from "../../components/Sidebar";
+import Navbar from "../../components/Navbar";
 
 import {
   Package,
@@ -16,15 +16,9 @@ import {
   ShieldPlus,
 } from "lucide-react";
 
-import {
-  useSession,
-} from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 export default function InventoryPage() {
-
-  //////////////////////////////////////////////////////
-  // AUTH
-  //////////////////////////////////////////////////////
 
   const { data: session } =
     useSession();
@@ -65,7 +59,7 @@ export default function InventoryPage() {
     useState("");
 
   //////////////////////////////////////////////////////
-  // FETCH INVENTORY
+  // FETCH PRODUCTS
   //////////////////////////////////////////////////////
 
   const fetchProducts =
@@ -94,7 +88,7 @@ export default function InventoryPage() {
         console.log(error);
 
         toast.error(
-          "Failed to load inventory"
+          "Inventory fetch failed"
         );
       }
     };
@@ -178,7 +172,8 @@ export default function InventoryPage() {
           await fetch(
             "/api/inventory",
             {
-              method: "POST",
+              method:
+                "POST",
 
               headers: {
                 "Content-Type":
@@ -203,7 +198,6 @@ export default function InventoryPage() {
           );
 
         if (!res.ok) {
-
           throw new Error();
         }
 
@@ -229,7 +223,7 @@ export default function InventoryPage() {
     };
 
   //////////////////////////////////////////////////////
-  // DELETE PRODUCT
+  // DELETE
   //////////////////////////////////////////////////////
 
   const deleteProduct =
@@ -249,12 +243,11 @@ export default function InventoryPage() {
           );
 
         if (!res.ok) {
-
           throw new Error();
         }
 
         toast.success(
-          "Deleted successfully"
+          "Deleted"
         );
 
         await fetchProducts();
@@ -270,147 +263,44 @@ export default function InventoryPage() {
     };
 
   //////////////////////////////////////////////////////
-  // RESERVE PRODUCT
-  //////////////////////////////////////////////////////
-
-  const reserveProduct =
-    async (
-      productId: string,
-      warehouseId: string
-    ) => {
-
-      try {
-
-        const res =
-          await fetch(
-            "/api/reservations",
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-
-              body: JSON.stringify({
-
-                productId,
-
-                warehouseId,
-
-                quantity: 1,
-              }),
-            }
-          );
-
-        const data =
-          await res.json();
-
-        ////////////////////////////////////////////////////
-        // 409
-        ////////////////////////////////////////////////////
-
-        if (
-          res.status === 409
-        ) {
-
-          toast.error(
-            data.message
-          );
-
-          return;
-        }
-
-        ////////////////////////////////////////////////////
-        // ERROR
-        ////////////////////////////////////////////////////
-
-        if (!res.ok) {
-
-          toast.error(
-
-            data.message ||
-
-            "Reservation failed"
-          );
-
-          return;
-        }
-
-        ////////////////////////////////////////////////////
-        // SUCCESS
-        ////////////////////////////////////////////////////
-        
-        console.log(
-          "RESERVATIONN:",
-            data
-        );
-
-        toast.success(
-          "Reserved successfully"
-        );
-
-        localStorage.setItem(
-          "reservation",
-
-          JSON.stringify(
-            data
-          )
-        );
-
-        window.location.assign(
-          "/checkout"
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-        toast.error(
-          "Reservation failed"
-        );
-      }
-    };
-
-  //////////////////////////////////////////////////////
-  // EDIT PRODUCT
+  // EDIT
   //////////////////////////////////////////////////////
 
   const editProduct =
-    (product: any) => {
+    (item: any) => {
 
       setEditingId(
-        product.id
+        item.id
       );
 
       setName(
-        product.product?.name || ""
+        item.product?.name || ""
       );
 
       setQuantity(
         String(
-          product.totalUnits || 0
+          item.totalUnits || 0
         )
       );
 
       setPrice(
         String(
-          product.product?.price || 0
+          item.product?.price || 0
         )
       );
 
       setCategory(
-        product.product?.category ||
+        item.product?.category ||
         "GENERAL"
       );
 
       setWarehouseId(
-        product.warehouse?.id || ""
+        item.warehouseId || ""
       );
     };
 
   //////////////////////////////////////////////////////
-  // UPDATE PRODUCT
+  // UPDATE
   //////////////////////////////////////////////////////
 
   const updateProduct =
@@ -418,11 +308,27 @@ export default function InventoryPage() {
 
       try {
 
+        const currentProduct =
+          products.find(
+            (item: any) =>
+              item.id === editingId
+          );
+
+        if (!currentProduct) {
+
+          toast.error(
+            "Product not found"
+          );
+
+          return;
+        }
+
         const res =
           await fetch(
             `/api/inventory/${editingId}`,
             {
-              method: "PUT",
+              method:
+                "PUT",
 
               headers: {
                 "Content-Type":
@@ -430,6 +336,12 @@ export default function InventoryPage() {
               },
 
               body: JSON.stringify({
+
+                inventoryId:
+                  editingId,
+
+                productId:
+                  currentProduct.product.id,
 
                 name,
 
@@ -447,7 +359,6 @@ export default function InventoryPage() {
           );
 
         if (!res.ok) {
-
           throw new Error();
         }
 
@@ -470,6 +381,115 @@ export default function InventoryPage() {
 
         toast.error(
           "Update failed"
+        );
+      }
+    };
+
+  //////////////////////////////////////////////////////
+  // RESERVE
+  //////////////////////////////////////////////////////
+
+  const reserveProduct =
+    async (
+      productId: string,
+      warehouseId: string
+    ) => {
+
+      try {
+
+        const response =
+          await fetch(
+            "/api/reservations",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+
+                productId:
+                  String(productId),
+
+                warehouseId:
+                  String(warehouseId),
+
+                quantity: 1,
+              }),
+            }
+          );
+
+        const result =
+          await response.json();
+
+        console.log(
+          "RESERVATION RESULT:",
+          result
+        );
+
+        ////////////////////////////////////////////////////
+        // FAILED
+        ////////////////////////////////////////////////////
+
+        if (!response.ok) {
+
+          toast.error(
+
+            result.message ||
+
+            "Reservation failed"
+          );
+
+          return;
+        }
+
+        ////////////////////////////////////////////////////
+        // STORE RESERVATION
+        ////////////////////////////////////////////////////
+         
+        console.log(
+          "SAVING:",
+          result
+        );
+        
+        localStorage.setItem(
+
+          "reservation",
+
+          JSON.stringify(
+            result.reservation
+          )
+        );
+
+        ////////////////////////////////////////////////////
+        // SUCCESS
+        ////////////////////////////////////////////////////
+
+        toast.success(
+          "Reservation successful"
+        );
+
+        ////////////////////////////////////////////////////
+        // REFRESH
+        ////////////////////////////////////////////////////
+
+        await fetchProducts();
+
+        ////////////////////////////////////////////////////
+        // REDIRECT
+        ////////////////////////////////////////////////////
+
+        window.location.href =
+          "/checkout";
+
+      } catch (error) {
+
+        console.log(error);
+
+        toast.error(
+          "Frontend error"
         );
       }
     };
@@ -541,7 +561,9 @@ export default function InventoryPage() {
                 placeholder="Product Name"
                 value={name}
                 onChange={(e) =>
-                  setName(e.target.value)
+                  setName(
+                    e.target.value
+                  )
                 }
                 className="border border-slate-200 rounded-2xl px-5 py-4"
               />
@@ -551,7 +573,9 @@ export default function InventoryPage() {
                 placeholder="Quantity"
                 value={quantity}
                 onChange={(e) =>
-                  setQuantity(e.target.value)
+                  setQuantity(
+                    e.target.value
+                  )
                 }
                 className="border border-slate-200 rounded-2xl px-5 py-4"
               />
@@ -561,7 +585,9 @@ export default function InventoryPage() {
                 placeholder="Price"
                 value={price}
                 onChange={(e) =>
-                  setPrice(e.target.value)
+                  setPrice(
+                    e.target.value
+                  )
                 }
                 className="border border-slate-200 rounded-2xl px-5 py-4"
               />
@@ -569,24 +595,26 @@ export default function InventoryPage() {
               <select
                 value={category}
                 onChange={(e) =>
-                  setCategory(e.target.value)
+                  setCategory(
+                    e.target.value
+                  )
                 }
                 className="border border-slate-200 rounded-2xl px-5 py-4"
               >
 
-                <option>
+                <option value="GENERAL">
                   GENERAL
                 </option>
 
-                <option>
+                <option value="ICU">
                   ICU
                 </option>
 
-                <option>
+                <option value="SURGICAL">
                   SURGICAL
                 </option>
 
-                <option>
+                <option value="MEDICINE">
                   MEDICINE
                 </option>
 
@@ -601,6 +629,10 @@ export default function InventoryPage() {
                 }
                 className="border border-slate-200 rounded-2xl px-5 py-4"
               >
+
+                <option value="">
+                  Select Warehouse
+                </option>
 
                 {warehouses.map(
                   (warehouse: any) => (
@@ -736,9 +768,7 @@ export default function InventoryPage() {
 
                       <td className="py-5">
                         ₹
-                        {
-                          product.product?.price
-                        }
+                        {product.product?.price}
                       </td>
 
                       <td className="py-5">
@@ -790,7 +820,7 @@ export default function InventoryPage() {
                                   product.id
                                 )
                               }
-                              className="bg-red-500 text-white p-3 rounded-xl"
+                              className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-xl"
                             >
 
                               <Trash2 size={16} />
