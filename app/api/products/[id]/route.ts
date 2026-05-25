@@ -1,26 +1,45 @@
-export const dynamic = "force-dynamic";
+export const dynamic =
+  "force-dynamic";
 
-import { prisma } from "../../../../lib/prisma";
+import { prisma }
+from "../../../../lib/prisma";
 
-import { NextResponse } from "next/server";
+import {
+  NextResponse
+}
+from "next/server";
 
+//////////////////////////////////////////////////////
 // DELETE PRODUCT
+//////////////////////////////////////////////////////
+
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
 
   try {
 
+    const { id } =
+      await context.params;
+
     await prisma.product.delete({
+
       where: {
-        id: params.id,
+        id,
       },
     });
 
     return NextResponse.json({
+
       success: true,
-      message: "Deleted successfully",
+
+      message:
+        "Deleted successfully",
     });
 
   } catch (error) {
@@ -28,10 +47,14 @@ export async function DELETE(
     console.log(error);
 
     return NextResponse.json(
+
       {
         success: false,
-        message: "Delete failed",
+
+        message:
+          "Delete failed",
       },
+
       {
         status: 500,
       }
@@ -39,32 +62,49 @@ export async function DELETE(
   }
 }
 
+//////////////////////////////////////////////////////
 // UPDATE PRODUCT
+//////////////////////////////////////////////////////
+
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
 
   try {
 
-    const body = await request.json();
+    const { id } =
+      await context.params;
+
+    const body =
+      await request.json();
 
     const updatedProduct =
+
       await prisma.product.update({
+
         where: {
-          id: params.id,
+          id,
         },
 
         data: {
-          name: body.name,
 
-          quantity: Number(
-            body.quantity
-          ),
+          name:
+            body.name,
 
-          price: Number(
-            body.price
-          ),
+          quantity:
+            Number(
+              body.quantity
+            ),
+
+          price:
+            Number(
+              body.price
+            ),
 
           category:
             body.category,
@@ -72,7 +112,9 @@ export async function PUT(
       });
 
     return NextResponse.json({
+
       success: true,
+
       updatedProduct,
     });
 
@@ -81,10 +123,14 @@ export async function PUT(
     console.log(error);
 
     return NextResponse.json(
+
       {
         success: false,
-        message: "Update failed",
+
+        message:
+          "Update failed",
       },
+
       {
         status: 500,
       }
