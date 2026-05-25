@@ -75,9 +75,7 @@ export async function PUT(
         name:
           body.name,
 
-        category:
-          body.category,
-
+        
         price:
           Number(body.price),
       },
