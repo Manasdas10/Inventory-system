@@ -1,3 +1,4 @@
+// updated
 export const dynamic =
   "force-dynamic";
 
