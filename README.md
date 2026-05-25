@@ -1,36 +1,248 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Allo Health Inventory Reservation System
 
-## Getting Started
+A full-stack inventory reservation system built using Next.js, Prisma, TypeScript, Tailwind CSS, and NextAuth.
 
-First, run the development server:
+This project allows users to manage inventory across warehouses, reserve products, confirm purchases, cancel reservations, and automatically release expired reservations.
+
+---
+
+# Tech Stack
+
+- Next.js 15
+- TypeScript
+- Prisma ORM
+- PostgreSQL / SQLite
+- Tailwind CSS
+- NextAuth
+- React Hot Toast
+- Lucide Icons
+
+---
+
+# Features
+
+## Inventory Management
+
+- Add products
+- Update products
+- Delete products
+- Search inventory
+- Warehouse-wise stock management
+- Low stock warning system
+
+---
+
+## Reservation System
+
+- Reserve inventory items
+- Prevent overselling
+- Warehouse-specific reservations
+- Live stock updates
+- Reservation persistence using localStorage
+
+---
+
+## Checkout Flow
+
+- Reservation checkout page
+- Live countdown timer
+- Confirm purchase functionality
+- Cancel reservation functionality
+- Automatic redirect after actions
+
+---
+
+## Error Handling
+
+### 409 Conflict
+Displayed when:
+- requested stock exceeds available inventory
+
+### 410 Gone
+Displayed when:
+- reservation expires before confirmation
+
+### 500 Internal Server Error
+Handled gracefully with frontend toast notifications
+
+---
+
+# Reservation Expiry Strategy
+
+This project uses lazy cleanup logic for reservation expiry.
+
+Reservations contain an `expiresAt` timestamp.
+
+When:
+- reservation expires,
+- reservation is cancelled,
+- or purchase is confirmed,
+
+the inventory `reservedUnits` are automatically updated.
+
+The checkout page continuously checks reservation validity using a live countdown timer and automatically redirects users after expiration.
+
+This prevents overselling while avoiding the need for background workers or cron jobs.
+
+---
+
+# Project Structure
+
+```txt
+app/
+ ├── api/
+ │    ├── inventory/
+ │    ├── reservations/
+ │    └── warehouse/
+ │
+ ├── checkout/
+ │    └── page.tsx
+ │
+ └── page.tsx
+
+components/
+ ├── Navbar.tsx
+ └── Sidebar.tsx
+
+prisma/
+ └── schema.prisma
+```
+
+---
+
+# Installation
+
+## Clone Repository
+
+```bash
+git clone https://github.com/Manasdas10/Inventory-system.git
+```
+
+---
+
+## Navigate to Project
+
+```bash
+cd Inventory-system
+```
+
+---
+
+## Install Dependencies
+
+```bash
+npm install
+```
+
+---
+
+# Environment Variables
+
+Create a `.env` file:
+
+```env
+DATABASE_URL="postgresql://postgres.ulwwupugnubbsbxnicrf:Manasd9870411@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+
+NEXTAUTH_SECRET="allohealthsupersecret"
+
+NEXTAUTH_SECRET="allohealthsupersecret"
+
+```
+
+---
+
+# Prisma Setup
+
+```bash
+npx prisma generate
+```
+
+```bash
+npx prisma db push
+```
+
+---
+
+# Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```txt
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+# API Endpoints
 
-To learn more about Next.js, take a look at the following resources:
+## Inventory
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Method | Endpoint |
+|--------|----------|
+| GET | `/api/inventory` |
+| POST | `/api/inventory` |
+| PUT | `/api/inventory/:id` |
+| DELETE | `/api/inventory/:id` |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Reservations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Method | Endpoint |
+|--------|----------|
+| POST | `/api/reservations` |
+| POST | `/api/reservations/[id]/confirm` |
+| POST | `/api/reservations/[id]/release` |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+# Frontend Pages
+
+| Page | Description |
+|------|-------------|
+| `/` | Inventory listing page |
+| `/checkout` | Reservation checkout page |
+
+---
+
+# Reservation Flow
+
+```txt
+Inventory Page
+      ↓
+Reserve Product
+      ↓
+Checkout Page
+      ↓
+Confirm / Cancel / Expire
+      ↓
+Inventory Updates Automatically
+```
+
+---
+
+# Deployment
+
+The project can be deployed on:
+
+- Vercel
+- Render
+- Railway
+
+---
+
+# GitHub Repository
+
+https://github.com/Manasdas10/Inventory-system
+
+---
+
+# Author
+
+## Manas Das
+
+Built as part of an inventory reservation system assignment.
