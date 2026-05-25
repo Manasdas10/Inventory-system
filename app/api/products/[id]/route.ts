@@ -97,10 +97,7 @@ export async function PUT(
           name:
             body.name,
 
-          quantity:
-            Number(
-              body.quantity
-            ),
+          
 
           price:
             Number(
