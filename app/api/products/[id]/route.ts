@@ -107,8 +107,7 @@ export async function PUT(
               body.price
             ),
 
-          category:
-            body.category,
+         
         },
       });
 
