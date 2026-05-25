@@ -88,8 +88,7 @@ export async function POST(
 
           name: body.name,
 
-          category:
-            body.category,
+          
 
           price:
             Number(body.price),
